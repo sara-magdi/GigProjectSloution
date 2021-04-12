@@ -130,10 +130,8 @@ namespace GigHubProject.Controllers
         // GET: Gigs
         public async Task<IActionResult> Index()
         {
-            var gigHubDbContext = _context.Gigs
-                .Include(g => g.Artist)
-                .Include(g => g.Genre);
-            return View(await gigHubDbContext.ToListAsync());
+           
+            return View(await _context.Gigs.ToListAsync());
         }
 
         // GET: Gigs/Details/5
@@ -165,7 +163,7 @@ namespace GigHubProject.Controllers
                 Heading = "Add a Gig",
                 Genres = _context.Genres.ToList()
             };
-            ViewData["GenreId"] = new SelectList(_context.Genres, "Id", "Name");
+            ViewData["GenreId"] = new SelectList(_context.Genres.ToList(), "Id", "Name");
             return View("GigForm", viewModel);
         }
 
@@ -192,13 +190,14 @@ namespace GigHubProject.Controllers
                 Venue = viewModel.Venue,
                 GenreId = viewModel.Genre
             };
+            ViewData["GenreId"] = new SelectList(_context.Genres, "Id", "Name");
+
             if (ModelState.IsValid)
             {
                 _context.Add(gig);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+               // return RedirectToAction(nameof(Index));
             }
-            ViewData["GenreId"] = new SelectList(_context.Genres, "Id", "Name", viewModel.Genre);
             return View("Mine","Gigs");
         }
 

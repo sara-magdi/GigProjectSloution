@@ -5,34 +5,41 @@
 @inject UserManager<User> UserManager
 
 <ul class="nav navbar-nav">
-@if (SignInManager.IsSignedIn(User))
-{
-    <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-         @UserManager.GetUserName(User)!</a>
-        <ul>
-            <li><a class="dropdown-menu" href="/Gigs/Mine/">My UpComing Gigs</a></li>
-            <li><a class="dropdown-item" href="/Gigs/Attending/">Gigs I'm Going</a></li>
-            <li>
-                <a class="dropdown-item" href="/Gigs/Following/">Artists I'm Following</a>
-            </li>
-            <li role="separator" class="dropdown-divider"></li>
-            <li class="nav-item">
-                <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                    <button id="logout" type="submit" class="nav-link btn btn-link text-dark">Logout</button>
-                </form>
-            </li>
-        </ul>
+    <li class="notifications">
+        <a href="#">
+            <i class="fa fa-globe-africa fa-2x text-white"></i>
+            <span class="badge badge-pill badge-primary js-notification-count hide"></span>
+        </a>
     </li>
-   
-}
-else
-{
-    <li class="nav-item">
-        <a class="nav-link text-dark" id="register" asp-area="Identity" asp-page="/Account/Register">Register</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link text-dark" id="login" asp-area="Identity" asp-page="/Account/Login">Login</a>
-    </li>
-}
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                @UserManager.GetUserName(User)!
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <li><a class="dropdown-item" href="/Gigs/Mine/">My UpComing Gigs</a></li>
+                <li><a class="dropdown-item" href="/Gigs/Attending/">Gigs I'm Going</a></li>
+                <li>
+                    <a class="dropdown-item" href="/Gigs/Following/">Artists I'm Following</a>
+                </li>
+                <li role="separator" class="dropdown-divider"></li>
+                <li class="nav-item">
+                    <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                        <button id="logout" type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </li>
+
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" id="register" asp-area="Identity" asp-page="/Account/Register">Register</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" id="login" asp-area="Identity" asp-page="/Account/Login">Login</a>
+        </li>
+    }
 </ul>
