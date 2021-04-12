@@ -4,14 +4,16 @@ using DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DAL.Migrations
 {
     [DbContext(typeof(GigHubDbContext))]
-    partial class GigHubDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210412101714_IsCancelProp")]
+    partial class IsCancelProp
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -297,53 +299,6 @@ namespace DAL.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("DAL.Notification", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("DateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("GigId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("OriginalDateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("OriginalVenue")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GigId");
-
-                    b.ToTable("Notification");
-                });
-
-            modelBuilder.Entity("DAL.UserNotification", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("NotificationId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
-
-                    b.HasKey("UserId", "NotificationId");
-
-                    b.HasIndex("NotificationId");
-
-                    b.ToTable("UserNotification");
-                });
-
             modelBuilder.Entity("DAL.Attendance", b =>
                 {
                     b.HasOne("DAL.Identity.User", "Attendee")
@@ -448,34 +403,6 @@ namespace DAL.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("DAL.Notification", b =>
-                {
-                    b.HasOne("DAL.Gig", "Gig")
-                        .WithMany()
-                        .HasForeignKey("GigId");
-
-                    b.Navigation("Gig");
-                });
-
-            modelBuilder.Entity("DAL.UserNotification", b =>
-                {
-                    b.HasOne("DAL.Notification", "Notification")
-                        .WithMany()
-                        .HasForeignKey("NotificationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DAL.Identity.User", "User")
-                        .WithMany("UserNotifications")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Notification");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("DAL.Gig", b =>
                 {
                     b.Navigation("Attendances");
@@ -486,8 +413,6 @@ namespace DAL.Migrations
                     b.Navigation("Followees");
 
                     b.Navigation("Followers");
-
-                    b.Navigation("UserNotifications");
                 });
 #pragma warning restore 612, 618
         }

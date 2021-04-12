@@ -17,13 +17,116 @@ namespace GigHubProject.Controllers
     {
         private readonly GigHubDbContext _context;
         private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
 
-        public GigsController(GigHubDbContext context,UserManager<User> userManager)
+        public GigsController(GigHubDbContext context
+            , UserManager<User> userManager, SignInManager<User> signInManager)
         {
             _context = context;
             _userManager = userManager;
+            _signInManager = signInManager;
         }
 
+        [Authorize]
+        public IActionResult Mine()
+        {
+            var UserId = _userManager.GetUserId(User);
+            var gig = _context.Gigs
+                  .Include(e => e.Attendances)
+                .ThenInclude(e => e.Attendee)
+                .Where(e => e.ArtistId == UserId
+                && e.DateTime > DateTime.Now
+                && !e.IsCanceled)
+                .Include(e => e.Genre)
+                .ToList();
+            return View(gig);
+        }
+
+        [Authorize]
+        public IActionResult Attending()
+        {
+            var UserId = _userManager.GetUserId(User);
+            var x = _signInManager.IsSignedIn(User);
+            var gigs = _context.Attendances
+                .Where(e => e.AttendeeId == UserId)
+                .Include(e => e.Gig)
+                    .ThenInclude(e => e.Genre)
+                .Include(e => e.Gig)
+                    .ThenInclude(e => e.Artist)
+                .Select(a => a.Gig)
+                .ToList();
+            var attendence = _context
+               .Attendances
+               .Where(e => e.AttendeeId == UserId && e.Gig.DateTime > DateTime.Now)
+               .ToList()
+               .ToLookup(e => e.GigId);
+            var viewModel = new GigsViewModel
+            {
+                UpComingGigs = gigs,
+                ShowAction = x,
+                Heading = "UpComing Gigs",
+                Attendances = attendence
+            };
+            return View("Gigs", viewModel);
+        }
+
+        [Authorize]
+        public IActionResult Following()
+        {
+            var UserId = _userManager.GetUserId(User);
+            var x = _signInManager.IsSignedIn(User);
+            var folow = _context.Followings
+                .Include(e => e.Follower)
+                .Where(e => e.FollowerId == UserId);
+
+            var viewModel = new GigsViewModel
+            {
+                Follow = folow,
+                ShowAction = x,
+                Heading = "Artists I'm Following"
+
+            };
+            return View("Followings", viewModel);
+        }
+        [HttpPost]
+        public IActionResult Search(GigsViewModel viewModel)
+        {
+            return RedirectToAction("Index", "Home", new { query = viewModel.SeaechTerm });
+        }
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var gig = await _context.Gigs
+                .Include(e => e.Artist)
+                .Include(e => e.Genre)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            var viewModel = new GigDetailsViewModel
+            {
+                Gig = gig
+            };
+            //var UserIsAuthaticat = _signInManager.IsSignedIn(User);
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var UserId = _userManager.GetUserId(User);
+                viewModel.IsAttending = _context
+                    .Attendances
+                    .Any(e => e.GigId == id && e.AttendeeId == UserId);
+                viewModel.IsFollowing = _context
+                    .Followings
+                    .Any(e => e.FollowerId == UserId && e.FolloweeId == gig.ArtistId);
+            }
+            if (gig == null)
+            {
+                return NotFound();
+            }
+
+            return View("Details", viewModel);
+        }
         // GET: Gigs
         public async Task<IActionResult> Index()
         {
@@ -34,24 +137,24 @@ namespace GigHubProject.Controllers
         }
 
         // GET: Gigs/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
+        //public async Task<IActionResult> Details(int? id)
+        //{
+        //    if (id == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            var gig = await _context.Gigs
-                .Include(g => g.Artist)
-                .Include(g => g.Genre)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (gig == null)
-            {
-                return NotFound();
-            }
+        //    var gig = await _context.Gigs
+        //        .Include(g => g.Artist)
+        //        .Include(g => g.Genre)
+        //        .FirstOrDefaultAsync(m => m.Id == id);
+        //    if (gig == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            return View(gig);
-        }
+        //    return View(gig);
+        //}
 
         // GET: Gigs/Create
         //[Authorize]
@@ -80,8 +183,8 @@ namespace GigHubProject.Controllers
 
                 return View("GigForm", viewModel);
             }
-           
-           
+
+
             var gig = new Gig
             {
                 ArtistId = _userManager.GetUserId(User),
@@ -96,7 +199,7 @@ namespace GigHubProject.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["GenreId"] = new SelectList(_context.Genres, "Id", "Name", viewModel.Genre);
-            return View(viewModel);
+            return View("Mine","Gigs");
         }
 
         // GET: Gigs/Edit/5
@@ -112,8 +215,7 @@ namespace GigHubProject.Controllers
             {
                 return NotFound();
             }
-            ViewData["ArtistId"] = new SelectList(_context.Users, "Id", "Id", gig.ArtistId);
-            ViewData["GenreId"] = new SelectList(_context.Genres, "Id", "Id", gig.GenreId);
+            ViewData["GenreId"] = new SelectList(_context.Genres, "Id", "Name", gig.GenreId);
             return View(gig);
         }
 
@@ -122,7 +224,7 @@ namespace GigHubProject.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Venue,DateTime,GenreId,ArtistId")] Gig gig)
+        public async Task<IActionResult> Edit(int id, Gig gig)
         {
             if (id != gig.Id)
             {
@@ -149,12 +251,33 @@ namespace GigHubProject.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ArtistId"] = new SelectList(_context.Users, "Id", "Id", gig.ArtistId);
-            ViewData["GenreId"] = new SelectList(_context.Genres, "Id", "Id", gig.GenreId);
+            ViewData["GenreId"] = new SelectList(_context.Genres, "Id", "Name", gig.GenreId);
             return View(gig);
         }
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Update(GigformViewModel viewModel) 
+        {
+            if (!ModelState.IsValid)
+            {
+                viewModel.Genres = _context.Genres.ToList();
+                return View("GigForm", viewModel);
+            }
+            var UserId = _userManager.GetUserId(User);
+            var gig = _context.Gigs
+                .Include(e => e.Attendances)
+                .ThenInclude(e => e.Attendee)
+                .Single(e => e.Id == viewModel.Id && e.ArtistId == UserId);
 
-        // GET: Gigs1/Delete/5
+
+           // gig.Modify(viewModel.GetDateTime(), viewModel.Genre, viewModel.Venue);
+            ViewData["GenreId"] = new SelectList(_context.Genres.ToList(), "Id", "Name");
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Mine", "Gigs");
+        }
+        // GET: Gigs/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)

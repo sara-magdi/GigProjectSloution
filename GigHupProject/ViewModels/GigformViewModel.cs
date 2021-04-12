@@ -1,8 +1,11 @@
 ﻿using DAL;
+using GigHubProject.Controllers;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace GigHubProject.ViewModels
@@ -25,6 +28,17 @@ namespace GigHubProject.ViewModels
         public byte Genre { get; set; }
         public IEnumerable<Genre> Genres { get; set; }
 
+        public string Action {
+            get 
+            {
+                Expression < Func < GigsController,Task < IActionResult >>> Update =
+                    (e => e.Update(this));
+                Expression<Func<GigsController, Task<IActionResult>>> Create =
+                    (e => e.Create(this));
+                var action = (Id != 0) ? Update : Create;
+                return (action.Body as MethodCallExpression).Method.Name;
+            } 
+        }
 
         public string Heading { get; set; }
         public DateTime GetDateTime()

@@ -15,10 +15,13 @@ namespace DAL.Identity
         public string Name { get; set; }
         public ICollection<Following> Followers { get; set; }
         public ICollection<Following> Followees { get; set; }
+        public ICollection<UserNotification> UserNotifications { get; set; }
+
         public User()
         {
             Followers = new HashSet<Following>();
             Followees = new HashSet<Following>();
+            UserNotifications = new HashSet<UserNotification>();
         }
     }
 }

@@ -37,6 +37,14 @@ namespace DAL
             builder.Entity<Following>()
                .HasKey(p => new { p.FollowerId, p.FolloweeId });
 
+            base.OnModelCreating(builder);
+            builder.Entity<UserNotification>()
+                     .HasOne(p => p.User).WithMany(p => p.UserNotifications)
+                     .HasForeignKey(p => p.UserId)
+                     .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<UserNotification>()
+                .HasKey(p => new { p.UserId, p.NotificationId });
+
         }
         public DbSet<Gig> Gigs { get; set; }
         public DbSet<Genre> Genres { get; set; }

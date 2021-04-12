@@ -1,6 +1,11 @@
-﻿using GigHupProject.Models;
+﻿using DAL;
+using DAL.Identity;
+using GigHubProject.ViewModels;
+using GigHupProject.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -13,26 +18,53 @@ namespace GigHupProject.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
+        private readonly GigHubDbContext _context;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(GigHubDbContext context,ILogger<HomeController> logger, UserManager<User> userManager, SignInManager<User> signInManager)
         {
             _logger = logger;
-        }
-      
-        public IActionResult Index()
-        {
-            return View();
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _context = context;
         }
 
-        public IActionResult Privacy()
+        public IActionResult Index(string query = null)
         {
-            return View();
+            var UserId = _userManager.GetUserId(User);
+            var x = _signInManager.IsSignedIn(User);
+            var upComingGigs = _context.Gigs
+                .Include(e => e.Artist)
+                .Include(e => e.Genre)
+                .Where(e => e.DateTime > DateTime.Now && !e.IsCanceled).ToList();
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                upComingGigs = upComingGigs
+                    .Where(e =>
+                e.Artist.Name.Contains(query) ||
+                e.Genre.Name.Contains(query) ||
+                e.Venue.Contains(query)).ToList();
+            }
+            var attendence = _context
+                .Attendances
+                .Where(e => e.AttendeeId == UserId && e.Gig.DateTime > DateTime.Now)
+                .ToList()
+                .ToLookup(e => e.GigId);
+            var viewModel = new GigsViewModel
+            {
+                UpComingGigs = upComingGigs,
+                ShowAction = x,
+                Heading = "Gigs I'm Going",
+                SeaechTerm = query,
+                Attendances = attendence
+            };
+            return View("Gigs", viewModel);
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        public IActionResult Index1()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return View();
         }
     }
 }

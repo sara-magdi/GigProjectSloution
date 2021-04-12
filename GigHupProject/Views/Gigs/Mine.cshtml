@@ -1,0 +1,93 @@
+﻿@model IEnumerable<Gig>
+@{
+
+}
+
+<h2>Up Coming Gigs</h2>
+
+<ul class="gigs voffset4">
+    @foreach (var gig in Model)
+    {
+        <li>
+            <div class="date">
+                <div class="month">
+                    @gig.DateTime.ToString("MM")
+                </div>
+                <div class="day">
+                    @gig.DateTime.ToString("d ")
+                </div>
+            </div>
+            <div class="details">
+                <span class="artist">
+                    @gig.Venue
+                </span>
+                <span class="genre">
+                    @gig.Genre.Name
+                </span>
+                <div class="actions">
+                    <a href="@Url.Action("Edit","Gigs",new {id =gig.Id})">
+                        Edit
+                    </a> |
+                    <a href="#" class="js-cancel-gig" data-gig-id="@gig.Id">
+                        Cancel
+                    </a>
+                </div>
+            </div>
+
+        </li>
+    }
+</ul>
+@section scripts
+{
+    <script>
+    $(document).ready(function () {
+        $(".js-cancel-gig").click(function (e) {
+            var link = $(e.target);
+
+            bootbox.dialog({
+                message: "Are you Sure you Want to Delete This Gig?",
+                buttons: {
+                    confirm: {
+                        label: 'No',
+                        className: 'btn-primary',
+                        callback: function () {
+                            bootbox.hideAll();
+                        }
+                    },
+                    cancel: {
+                        label: 'yes',
+                        className: 'btn-danger',
+                        callback: function (result) {
+
+                            $.ajax({
+                                url: "/api/gigs/" + link.attr("data-gig-id"),
+                                type: 'POST',
+                                cache: false,
+                                //data: JSON.stringify(link),
+                                //dataType: 'json',
+                                contentType: "application/json; charset=utf-8",
+                                success: function (res) {
+                                    link.parents("li").fadeOut(function () {
+                                        $(this).remove();
+                                    });
+                                },
+                                error: function (err) {
+                                    debugger;
+                                    alert("Something failed!");
+                                }
+
+                            });
+
+                        }
+                    }
+                }
+
+            })
+
+
+
+        })
+
+    })
+    </script>
+}

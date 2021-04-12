@@ -1,0 +1,73 @@
+﻿@model GigsViewModel
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<h1>@Model.Heading</h1>
+<ul class="gigs voffset4">
+    @foreach (var flow in Model.Follow)
+    {
+        <li>
+            <div class="details">
+                <span class="artist">
+                    @flow.Follower.Name
+                    @if (Model.ShowAction)
+                    {
+                        <button type="button" class="btn btn-link btn-sm Js-toggle-follow" data-user-id="@flow.FollowerId">Following</button>
+                    }
+                </span>
+            </div>
+        </li>
+    }
+</ul>
+
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            $(".Js-toggle-Attendance").click(function (e) {
+                var button = $(e.target);
+                var data = { GigId: button.attr("data-gig-id") };
+
+                $.ajax({
+                    url: "/api/Attendances/",
+                    type: 'POST',
+                    cache: false,
+                    data: JSON.stringify(data),
+                    dataType: 'json',
+                    contentType: "application/json; charset=utf-8",
+                    success: function (response) {
+                        button
+                            .removeClass("btn-outline-info")
+                            .addClass("btn-info")
+                            .text("Going");
+                    },
+                    error: function () {
+                        alert("Something failed");
+                    }
+                });
+            });
+            $(".Js-toggle-follow").click(function (e) {
+                var button = $(e.target);
+                var data = { FolloweeId: button.attr("data-user-id") };
+                
+                $.ajax({
+                    url: "/api/Followings/",
+                    type: 'POST',
+                    cache: false,
+                    data: JSON.stringify(data),
+                    dataType: 'json',
+                    contentType: "application/json; charset=utf-8",
+                    success: function (response) {
+                        button
+                            .text("Following");
+                    },
+                    error: function () {
+                        alert("Something failed");
+                    }
+
+                });
+            })
+        });
+    </script>
+}

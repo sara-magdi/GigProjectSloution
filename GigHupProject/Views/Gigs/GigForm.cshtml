@@ -10,7 +10,10 @@
     <hr />
     <div class="row">
         <div class="col-md-4">
-            <form asp-action="Create">
+            @*<form asp-action="Create">*@
+            @using(Html.BeginForm(Model.Action,"Gigs"))
+            { 
+                <p class="alert alert-info">All fields are <strong>Required</strong>.</p>
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 @Html.AntiForgeryToken()
                 @Html.HiddenFor(e => e.Id)
@@ -36,7 +39,8 @@
                 <div class="form-group">
                     <input type="submit" value="Create" class="btn btn-primary" />
                 </div>
-            </form>
+            }
+           @* </form>*@
         </div>
     </div>
 </div>
