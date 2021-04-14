@@ -50,5 +50,7 @@ namespace DAL
         public DbSet<Genre> Genres { get; set; }
         public DbSet<Attendance> Attendances { get; set; }
         public DbSet<Following> Followings { get; set; }
+        public DbSet<UserNotification> UserNotifications { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
     }
 }

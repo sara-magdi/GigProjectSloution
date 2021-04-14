@@ -38,24 +38,23 @@
                     {
                         <span class="btn-warning">Canceled</span>
                     }
-                    @if (Model.ShowAction)
-                    {
-                        <button type="button" class="btn btn-link btn-sm Js-toggle-follow" data-user-id="@gig.ArtistId">Following</button>
-                    }
+                    @*@if (Model.ShowAction)
+                        {
+                            <button type="button" class="btn btn-link btn-sm Js-toggle-follow" data-user-id="@gig.ArtistId">Following</button>
+                        }*@
                 </span>
                 <span class="genre">
                     @gig.Genre.Name
                 </span>
                 @if (Model.ShowAction && !gig.IsCanceled)
-                 {
-                    <button 
-                            data-gig-id="@gig.Id" type="button"
+                {
+                    <button data-gig-id="@gig.Id" type="button"
                             class="btn
                             @(Model.Attendances.Contains(gig.Id) ?"btn-info":"btn-outline-info")
                             btn-sm pull-right Js-toggle-Attendance">
                         Going?
                     </button>
-                 }
+                }
             </div>
         </li>
     }

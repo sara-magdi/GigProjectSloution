@@ -26,6 +26,26 @@ namespace DAL
         {
             Attendances = new HashSet<Attendance>();
         }
+        public void Cancel()
+        {
+            IsCanceled = true;
 
+            var notification = Notification.GigCancel(this);
+            foreach (var attendnee in Attendances.Select(e => e.Attendee))
+            {
+                attendnee.Notify(notification);
+            }
+        }
+
+        public void Modify(DateTime dateTime, byte genre, string venue)
+        {
+            var notification = Notification.GigUpdate(this, DateTime, Venue);
+
+            Venue = venue;
+            DateTime = dateTime;
+            GenreId = genre;
+            foreach (var attendee in Attendances.Select(e => e.Attendee))
+                attendee.Notify(notification);
+        }
     }
 }

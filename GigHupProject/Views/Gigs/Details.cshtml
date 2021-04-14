@@ -14,11 +14,11 @@
             {
 
 
-                <button class="btn btn-info">Following</button>
+                <button class="btn btn-info js-toggle-follow" data-user-id="@Model.Gig.ArtistId">Following</button>
             }
             else
             {
-                <button class="btn btn-light">Follow</button>
+                <button class="btn btn-outline-info js-toggle-follow" data-user-id="@Model.Gig.ArtistId">Follow</button>
 
             }
         }
@@ -34,9 +34,12 @@
 </div>
 @section scripts{
     <script>
-
+        $(document).ready(function () {
+            FollowController.init();
+        });
     </script>
 }
+
 
 
 

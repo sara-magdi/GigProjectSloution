@@ -23,5 +23,25 @@ namespace DAL
         public virtual Notification Notification { get; private set; }
 
         public bool IsRead { get; set; }
+        public UserNotification(User user, Notification notification)
+        {
+            if (user == null)
+                throw new AggregateException("user");
+
+            if (notification == null)
+                throw new AggregateException("notification");
+
+            User = user;
+            UserId = user.Id;
+            Notification = notification;
+        }
+        public void Read()
+        {
+            IsRead = true;
+        }
+        protected UserNotification()
+        {
+
+        }
     }
 }

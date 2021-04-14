@@ -23,5 +23,9 @@ namespace DAL.Identity
             Followees = new HashSet<Following>();
             UserNotifications = new HashSet<UserNotification>();
         }
+        public void Notify(Notification notification)
+        {
+            UserNotifications.Add(new UserNotification(this, notification));
+        }
     }
 }

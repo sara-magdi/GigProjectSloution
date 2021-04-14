@@ -1,3 +1,4 @@
+using AutoMapper;
 using DAL;
 using DAL.Identity;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -42,7 +43,14 @@ namespace GigHubProject
               {
                   opt.LoginPath = "/Identity/Account/Login";
               });
+            var mapperConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new MappingProfile());
+            });
+
+            services.AddAutoMapper(typeof(Startup));
             services.AddControllersWithViews();
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
